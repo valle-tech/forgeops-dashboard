@@ -1,15 +1,25 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveGlobalSettingsAction } from "@/app/actions/settings";
 import type { SettingsView } from "@/app/actions/settings";
 
-export function SettingsForm({ initial }: { initial: SettingsView }) {
+export function SettingsForm({
+  initial,
+  templateIds,
+}: {
+  initial: SettingsView;
+  templateIds: string[];
+}) {
   const router = useRouter();
   const [token, setToken] = useState("");
   const [defaultPort, setDefaultPort] = useState(
     initial.defaultPort != null ? String(initial.defaultPort) : "",
+  );
+  const [defaultTemplate, setDefaultTemplate] = useState(
+    initial.defaultTemplate ?? templateIds[0] ?? "nestjs-clean",
   );
   const [outputPath, setOutputPath] = useState(initial.servicesOutputPath ?? "");
   const [err, setErr] = useState<string | null>(null);
@@ -29,6 +39,7 @@ export function SettingsForm({ initial }: { initial: SettingsView }) {
               githubToken: token.trim() || undefined,
               defaultPort: defaultPort.trim() || undefined,
               servicesOutputPath: outputPath.trim() || undefined,
+              defaultTemplate: defaultTemplate.trim() || undefined,
             });
             setMsg("Saved ~/.forgeops/config.json");
             setToken("");
@@ -70,6 +81,25 @@ export function SettingsForm({ initial }: { initial: SettingsView }) {
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         />
         <p className="mt-1 text-xs text-zinc-500">Leave empty to keep the existing token.</p>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium">Default template</label>
+        <select
+          value={defaultTemplate}
+          onChange={(e) => setDefaultTemplate(e.target.value)}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+        >
+          {templateIds.map((id) => (
+            <option key={id} value={id}>
+              {id}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-zinc-500">
+          Pre-selects template on <Link href="/services/new">Create service</Link>. Also configurable under{" "}
+          <Link href="/templates">Templates</Link>.
+        </p>
       </div>
 
       <div>

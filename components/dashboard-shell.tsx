@@ -1,9 +1,14 @@
 import Link from "next/link";
 
 const nav = [
+  { href: "/", label: "Home" },
   { href: "/services", label: "Services" },
   { href: "/services/new", label: "Create service" },
+  { href: "/templates", label: "Templates" },
+  { href: "/system", label: "System" },
   { href: "/settings", label: "Settings" },
+  { href: "/auth/login", label: "Login" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {

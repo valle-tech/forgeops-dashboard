@@ -6,6 +6,8 @@ import { getServicesOutputDir } from "./paths";
 export type DashboardDefaults = {
   defaultPort?: number;
   servicesOutputPath?: string;
+  /** Default template id for new services (dashboard + create form). */
+  defaultTemplate?: string;
 };
 
 export type UserForgeopsConfig = {
@@ -54,4 +56,16 @@ export async function getServicesOutputDirResolved(): Promise<string> {
 /** Sync display path for pages that cannot await (fallback only). */
 export function getServicesOutputDirSync(): string {
   return getServicesOutputDir();
+}
+
+export async function getDashboardDefaults(): Promise<{
+  defaultTemplate: string;
+  defaultPort: number | null;
+}> {
+  const cfg = await loadUserForgeopsConfig();
+  const d = cfg.dashboard ?? {};
+  const t = typeof d.defaultTemplate === "string" && d.defaultTemplate.trim() ? d.defaultTemplate.trim() : "nestjs-clean";
+  const port =
+    typeof d.defaultPort === "number" && Number.isFinite(d.defaultPort) ? d.defaultPort : null;
+  return { defaultTemplate: t, defaultPort: port };
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { runForgeops } from "@/lib/forgeops-exec";
 import { getServicesOutputDirResolved } from "@/lib/user-forgeops-config";
 import { enrichService, loadRegistry } from "@/lib/registry-read";
+import { logActivitySafe } from "@/lib/activity-log";
 
 function errMessage(r: { stdout: string; stderr: string; code: number }): string {
   const t = (r.stderr || r.stdout || "").trim();
@@ -45,8 +46,14 @@ export async function createServiceAction(input: {
 
   const r = await runForgeops(args);
   if (r.code !== 0) throw new Error(errMessage(r));
+  await logActivitySafe({
+    type: "service_created",
+    service: input.name.trim(),
+    detail: `${input.template} · port ${input.port}`,
+  });
   revalidatePath("/services");
   revalidatePath("/services/new");
+  revalidatePath("/");
 }
 
 export async function deleteServiceAction(input: { name: string; removeRepo: boolean }) {
@@ -54,8 +61,14 @@ export async function deleteServiceAction(input: { name: string; removeRepo: boo
   if (input.removeRepo) args.push("--remove-repo");
   const r = await runForgeops(args);
   if (r.code !== 0) throw new Error(errMessage(r));
+  await logActivitySafe({
+    type: "service_deleted",
+    service: input.name.trim(),
+    detail: input.removeRepo ? "including repo delete attempt" : "local only",
+  });
   revalidatePath("/services");
   revalidatePath(`/services/${encodeURIComponent(input.name)}`);
+  revalidatePath("/");
 }
 
 export async function getServicesForList() {

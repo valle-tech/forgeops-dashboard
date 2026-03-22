@@ -6,6 +6,7 @@ import { writeFile } from "node:fs/promises";
 import { resolveServicePath } from "@/lib/service-resolve";
 import { readEnvFile, writeEnvFile } from "@/lib/env-file";
 import { readManifest } from "@/lib/manifest-fs";
+import { logActivitySafe } from "@/lib/activity-log";
 
 function revalidateServiceRoutes(name: string) {
   const enc = encodeURIComponent(name);
@@ -37,7 +38,9 @@ export async function getServiceConfigFiles(name: string): Promise<{
 export async function saveServiceEnvAction(serviceName: string, content: string) {
   const root = await resolveServicePath(serviceName);
   await writeEnvFile(root, content);
+  await logActivitySafe({ type: "env_updated", service: serviceName });
   revalidateServiceRoutes(serviceName);
+  revalidatePath("/");
 }
 
 export async function saveServiceForgeopsAction(serviceName: string, jsonText: string) {
@@ -50,5 +53,7 @@ export async function saveServiceForgeopsAction(serviceName: string, jsonText: s
   }
   const p = path.join(root, ".forgeops.json");
   await writeFile(p, JSON.stringify(parsed, null, 2) + "\n", "utf8");
+  await logActivitySafe({ type: "forgeops_config_updated", service: serviceName });
   revalidateServiceRoutes(serviceName);
+  revalidatePath("/");
 }

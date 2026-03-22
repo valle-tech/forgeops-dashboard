@@ -7,6 +7,7 @@ import {
   maskSecret,
   type UserForgeopsConfig,
 } from "@/lib/user-forgeops-config";
+import { logActivitySafe } from "@/lib/activity-log";
 
 function safeConfigPreview(cfg: UserForgeopsConfig): string {
   const c = JSON.parse(JSON.stringify(cfg)) as Record<string, unknown>;
@@ -23,6 +24,7 @@ export type SettingsView = {
   githubTokenPreview: string | null;
   defaultPort: number | null;
   servicesOutputPath: string | null;
+  defaultTemplate: string | null;
   rawJsonPreview: string;
 };
 
@@ -41,6 +43,10 @@ export async function getGlobalSettingsView(): Promise<SettingsView> {
       typeof dash.servicesOutputPath === "string" && dash.servicesOutputPath.trim()
         ? dash.servicesOutputPath.trim()
         : null,
+    defaultTemplate:
+      typeof dash.defaultTemplate === "string" && dash.defaultTemplate.trim()
+        ? dash.defaultTemplate.trim()
+        : null,
     rawJsonPreview: safeConfigPreview(cfg),
   };
 }
@@ -49,9 +55,14 @@ export async function saveGlobalSettingsAction(input: {
   githubToken?: string;
   defaultPort?: string;
   servicesOutputPath?: string;
+  defaultTemplate?: string;
 }) {
   const cfg = await loadUserForgeopsConfig();
   const next = structuredClone(cfg) as UserForgeopsConfig;
+  const prevTemplate =
+    typeof cfg.dashboard === "object" && cfg.dashboard && typeof cfg.dashboard.defaultTemplate === "string"
+      ? cfg.dashboard.defaultTemplate
+      : null;
 
   if (input.githubToken !== undefined && input.githubToken.trim()) {
     next.github = { ...(typeof next.github === "object" && next.github ? next.github : {}), token: input.githubToken.trim() };
@@ -67,8 +78,17 @@ export async function saveGlobalSettingsAction(input: {
   if (input.servicesOutputPath !== undefined && input.servicesOutputPath.trim()) {
     dash.servicesOutputPath = input.servicesOutputPath.trim();
   }
+  if (input.defaultTemplate !== undefined && input.defaultTemplate.trim()) {
+    const t = input.defaultTemplate.trim();
+    dash.defaultTemplate = t;
+    if (t !== prevTemplate) {
+      await logActivitySafe({ type: "default_template_set", detail: t });
+    }
+  }
 
   await saveUserForgeopsConfig(next);
   revalidatePath("/settings");
   revalidatePath("/services/new");
+  revalidatePath("/templates");
+  revalidatePath("/");
 }

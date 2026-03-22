@@ -3,12 +3,33 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createServiceAction } from "@/app/actions/services";
-import { TEMPLATES, DATABASES } from "@/lib/constants";
+import { DATABASES } from "@/lib/constants";
+import { inferLanguageFromTemplateId } from "@/lib/template-language";
 
-export function CreateServiceForm() {
+export type TemplateOption = { id: string; label: string; language: "node" | "go" | "python" };
+
+export function CreateServiceForm({
+  templateOptions,
+  initialTemplateId,
+  initialPort,
+}: {
+  templateOptions: TemplateOption[];
+  initialTemplateId: string;
+  initialPort: number;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const firstId = templateOptions[0]?.id ?? "nestjs-clean";
+  const resolvedInitial = templateOptions.some((o) => o.id === initialTemplateId)
+    ? initialTemplateId
+    : firstId;
+  const [tpl, setTpl] = useState(resolvedInitial);
+  const [lang, setLang] = useState(() => {
+    const o = templateOptions.find((x) => x.id === resolvedInitial);
+    return o?.language ?? inferLanguageFromTemplateId(resolvedInitial);
+  });
 
   return (
     <form
@@ -16,8 +37,8 @@ export function CreateServiceForm() {
       action={(fd) => {
         setError(null);
         const name = String(fd.get("name") || "").trim();
-        const template = String(fd.get("template") || "");
-        const language = String(fd.get("language") || "");
+        const template = String(fd.get("template") || tpl);
+        const language = String(fd.get("language") || lang);
         const db = String(fd.get("db") || "none");
         const port = Number(fd.get("port"));
         const auth = fd.get("auth") === "on";
@@ -75,14 +96,16 @@ export function CreateServiceForm() {
           id="template"
           name="template"
           required
-          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
+          value={tpl}
           onChange={(e) => {
-            const t = TEMPLATES.find((x) => x.id === e.target.value);
-            const lang = document.getElementById("language") as HTMLSelectElement | null;
-            if (t && lang) lang.value = t.language;
+            const id = e.target.value;
+            setTpl(id);
+            const o = templateOptions.find((x) => x.id === id);
+            setLang(o?.language ?? inferLanguageFromTemplateId(id));
           }}
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         >
-          {TEMPLATES.map((t) => (
+          {templateOptions.map((t) => (
             <option key={t.id} value={t.id}>
               {t.label}
             </option>
@@ -98,7 +121,8 @@ export function CreateServiceForm() {
           id="language"
           name="language"
           required
-          defaultValue={TEMPLATES[0].language}
+          value={lang}
+          onChange={(e) => setLang(e.target.value as TemplateOption["language"])}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         >
           <option value="node">node</option>
@@ -136,7 +160,7 @@ export function CreateServiceForm() {
           required
           min={1}
           max={65535}
-          defaultValue={3000}
+          defaultValue={initialPort}
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950"
         />
       </div>
