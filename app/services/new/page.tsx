@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { CreateServiceForm } from "@/components/create-service-form";
-import { getServicesOutputDir } from "@/lib/paths";
+import { getServicesOutputDirResolved } from "@/lib/user-forgeops-config";
 
-export default function NewServicePage() {
-  const out = getServicesOutputDir();
+export default async function NewServicePage() {
+  const out = await getServicesOutputDirResolved();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
