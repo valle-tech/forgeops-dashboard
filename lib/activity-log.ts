@@ -59,11 +59,9 @@ export async function listRecentActivities(limit = 40): Promise<ActivityEvent[]>
   return data.events.slice(0, limit);
 }
 
-/** Never throws — activity logging must not break primary actions. */
 export async function logActivitySafe(event: Omit<ActivityEvent, "at">): Promise<void> {
   try {
     await appendActivity(event);
   } catch {
-    /* ignore */
   }
 }

@@ -1,4 +1,3 @@
-/** Parse owner/repo from common GitHub URL shapes. */
 export function parseGithubRepo(repoUrl: string): { owner: string; repo: string } | null {
   const u = String(repoUrl || "").trim();
   const m = u.match(/github\.com[/:]([^/]+)\/([^/.]+?)(?:\.git)?\/?$/i);

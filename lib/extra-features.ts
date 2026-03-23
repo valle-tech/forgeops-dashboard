@@ -9,7 +9,6 @@ import {
   removeManifestFeature,
 } from "./manifest-fs";
 
-/** Post-create auth wiring (mirrors cli scaffold writeAuthExtras + JWT env). */
 export async function addAuthFeature(root: string, serviceName: string): Promise<void> {
   await patchManifest(root, { auth: true });
   await mergeEnvFile(root, {
@@ -34,7 +33,6 @@ export async function removeAuthFeature(root: string): Promise<void> {
   await removeDoc(root, "FORGEOPS_AUTH.md");
 }
 
-/** Redis-oriented cache stub (same pattern as \`add feature logging\`). */
 export async function addCacheFeature(root: string, serviceName: string): Promise<void> {
   await appendManifestFeature(root, "cache");
   await mergeEnvFile(root, { REDIS_URL: "redis://localhost:6379" });

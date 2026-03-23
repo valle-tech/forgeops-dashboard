@@ -29,7 +29,6 @@ export async function getServiceLogsBundle(serviceName: string): Promise<{
       const m = await readManifest(root);
       slug = String(m.serviceSlug || m.slug || slug);
     } catch {
-      /* keep */
     }
     const d = await dockerComposeLogsTail(root, slug, 250);
     if (d.code === 0 && d.stdout.trim()) {
@@ -82,7 +81,6 @@ export async function getServiceHealthProbe(serviceName: string): Promise<
     const m = await readManifest(root);
     port = Number(m.httpPort ?? m.port ?? 3000) || 3000;
   } catch {
-    /* default */
   }
   const h = await probeHealth(port);
   return { ...h, port };

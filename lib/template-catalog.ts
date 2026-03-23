@@ -26,7 +26,6 @@ export async function listAllTemplates(): Promise<TemplateListItem[]> {
       }
     }
   } catch {
-    /* no builtin dir */
   }
   const croot = customTemplatesRoot();
   try {
@@ -37,7 +36,6 @@ export async function listAllTemplates(): Promise<TemplateListItem[]> {
       }
     }
   } catch {
-    /* none */
   }
   return [...byId.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
@@ -60,27 +58,31 @@ export type TemplateDetail = {
 
 const FEATURES_BY_ID: Record<string, string[]> = {
   "nestjs-clean": [
-    "NestJS HTTP API",
-    "Health + readiness",
-    "Structured JSON logging",
-    "Sample payments module",
-    "Dockerfile + docker-compose",
-    "GitHub Actions CI (test + Docker)",
+    "NestJS HTTP API (optional GraphQL)",
+    "Health + readiness + /metrics",
+    "Structured JSON logging + request id",
+    "Sample payments module (DDD-style)",
+    "Optional JWT + RBAC",
+    "Optional OpenTelemetry → OTLP",
+    "Dockerfile + docker-compose (+ optional Redis)",
+    "GitHub Actions CI (test, Docker, env deploy placeholders)",
     "Env validation",
   ],
   "go-clean": [
     "Go net/http + ServeMux",
     "Health + payments modules",
     "JSON request logging",
+    "Optional JWT + OTEL",
     "Dockerfile + docker-compose",
     "GitHub Actions CI",
   ],
   "python-clean": [
-    "Python app + routers (FastAPI-style layout)",
+    "FastAPI app + modular routers",
     "Health + payments routes",
+    "Optional JWT + OTEL",
     "Dockerfile + docker-compose",
     "GitHub Actions CI",
-    "requirements.txt",
+    "pytest (unit + integration)",
   ],
 };
 
@@ -106,7 +108,6 @@ export async function getTemplateDetail(id: string): Promise<TemplateDetail | nu
         await stat(path.join(root, "requirements.txt"));
         stack = "Python (requirements.txt)";
       } catch {
-        /* keep */
       }
     }
   }
@@ -129,7 +130,6 @@ export async function getTemplateDetail(id: string): Promise<TemplateDetail | nu
         .join("\n");
       break;
     } catch {
-      /* next */
     }
   }
 

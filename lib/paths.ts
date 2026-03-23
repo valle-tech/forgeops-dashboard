@@ -9,7 +9,6 @@ export function getForgeopsCliBin(): string {
   return path.join(root, "bin", "forgeops.js");
 }
 
-/** Parent directory for new services (repo root when dashboard lives in forgeops/dashboard). */
 export function getServicesOutputDir(): string {
   return process.env.FORGEOPS_SERVICES_OUTPUT
     ? path.resolve(process.env.FORGEOPS_SERVICES_OUTPUT)

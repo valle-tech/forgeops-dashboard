@@ -8,7 +8,6 @@ export default function ProfilePage() {
   try {
     username = os.userInfo().username;
   } catch {
-    /* ignore */
   }
   const host = os.hostname();
 

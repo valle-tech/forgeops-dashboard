@@ -1,6 +1,5 @@
 import type { ForgeopsManifest } from "./manifest-fs";
 
-/** Effective capabilities for UI (manifest + CLI conventions). */
 export function collectEnabledFeatures(m: ForgeopsManifest): string[] {
   const out = new Set<string>();
   for (const f of Array.isArray(m.features) ? m.features : []) {

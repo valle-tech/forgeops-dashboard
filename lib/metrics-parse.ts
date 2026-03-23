@@ -1,4 +1,3 @@
-/** Very small summary when Prometheus text is returned. */
 export function summarizeMetricsText(text: string): {
   lineCount: number;
   requestHints: number;

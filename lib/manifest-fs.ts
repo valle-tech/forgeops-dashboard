@@ -61,7 +61,6 @@ export async function mergeEnvFile(
   try {
     content = await readFile(p, "utf8");
   } catch {
-    /* new */
   }
   const lines = content.split("\n");
   const keys = new Set(

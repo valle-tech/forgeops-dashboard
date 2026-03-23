@@ -6,7 +6,6 @@ import { getServicesOutputDir } from "./paths";
 export type DashboardDefaults = {
   defaultPort?: number;
   servicesOutputPath?: string;
-  /** Default template id for new services (dashboard + create form). */
   defaultTemplate?: string;
 };
 
@@ -53,7 +52,6 @@ export async function getServicesOutputDirResolved(): Promise<string> {
   return getServicesOutputDir();
 }
 
-/** Sync display path for pages that cannot await (fallback only). */
 export function getServicesOutputDirSync(): string {
   return getServicesOutputDir();
 }

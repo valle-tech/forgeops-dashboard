@@ -53,7 +53,6 @@ export async function enrichService(entry: RegistryEntry): Promise<EnrichedServi
         const st = await stat(entry.path);
         lastUpdated = st.mtime.toISOString();
       } catch {
-        /* keep */
       }
     }
   } catch {
