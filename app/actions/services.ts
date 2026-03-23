@@ -11,6 +11,39 @@ function errMessage(r: { stdout: string; stderr: string; code: number }): string
   return t || `Forgeops exited with code ${r.code}`;
 }
 
+function buildCreateDetail(input: {
+  template: string;
+  language: string;
+  port: number;
+  db: string;
+  messaging: string;
+  ci: string;
+  infra: string;
+  auth: boolean;
+  graphql: boolean;
+  oauth: boolean;
+  redis: boolean;
+  observe: boolean;
+  architecture: string;
+}): string {
+  const parts = [
+    input.template,
+    input.language,
+    `port ${input.port}`,
+    `db ${input.db}`,
+    input.messaging !== "none" ? `msg ${input.messaging}` : null,
+    `ci ${input.ci}`,
+    input.infra !== "none" ? `infra ${input.infra}` : null,
+    `arch ${input.architecture}`,
+    input.auth ? "auth" : null,
+    input.graphql && input.language === "node" ? "graphql" : null,
+    input.oauth ? "oauth" : null,
+    input.redis ? "redis" : null,
+    input.observe ? "otel" : "no-otel",
+  ].filter(Boolean);
+  return parts.join(" · ");
+}
+
 export async function createServiceAction(input: {
   name: string;
   template: string;
@@ -18,7 +51,18 @@ export async function createServiceAction(input: {
   db: string;
   port: number;
   auth: boolean;
+  architecture: string;
+  messaging: string;
+  ci: string;
+  infra: string;
+  graphql: boolean;
+  oauth: boolean;
+  redis: boolean;
+  observe: boolean;
 }) {
+  if (input.architecture !== "clean") {
+    throw new Error('Only architecture "clean" is supported.');
+  }
   const outDir = await getServicesOutputDirResolved();
   const args = [
     "create",
@@ -34,22 +78,28 @@ export async function createServiceAction(input: {
     "--port",
     String(input.port),
     "--messaging",
-    "none",
+    input.messaging,
     "--ci",
-    "github",
+    input.ci,
     "--infra",
-    "none",
+    input.infra,
+    "--arch",
+    input.architecture,
     "--output",
     outDir,
   ];
   if (input.auth) args.push("--auth");
+  if (input.graphql && input.language === "node") args.push("--graphql");
+  if (input.oauth) args.push("--oauth");
+  if (input.redis) args.push("--redis");
+  if (!input.observe) args.push("--no-observe");
 
   const r = await runForgeops(args);
   if (r.code !== 0) throw new Error(errMessage(r));
   await logActivitySafe({
     type: "service_created",
     service: input.name.trim(),
-    detail: `${input.template} · port ${input.port}`,
+    detail: buildCreateDetail(input),
   });
   revalidatePath("/services");
   revalidatePath("/services/new");
@@ -77,4 +127,3 @@ export async function getServicesForList() {
   enriched.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   return enriched;
 }
-

@@ -12,6 +12,11 @@ export type RegistryEntry = {
   database?: string;
   messaging?: string;
   auth?: boolean;
+  graphql?: boolean;
+  oauth?: boolean;
+  redis?: boolean;
+  observe?: boolean;
+  architecture?: string;
   httpPort?: number;
   port?: number;
   repoUrl?: string;
